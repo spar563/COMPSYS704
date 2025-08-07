@@ -1,0 +1,14 @@
+CD->{
+	signal A;
+	{ // First reaction
+		/* Replace await(A); to SystemJ kernel statements to achieve the same behaviour */
+		abort {
+		    pause;   // wait one logical instant
+		} when A;
+		System.out.println("Got a");
+	}
+	||
+	{ // Second reaction
+		emit A;
+	}
+}
