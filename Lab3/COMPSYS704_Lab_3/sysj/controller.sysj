@@ -1,0 +1,106 @@
+Controller(
+		input signal pusherRetracted,pusherExtended,WPgripped,armAtSource,armAtDest,empty,request;
+		output signal pusherExtend,vacOn,armSource,armDest;
+		input Integer signal mode;
+		input signal pusherExtendM,vacOnM,armSourceM,armDestM;
+		)
+->{
+/* TODO: Write control-logic
+1. The arm swivels to the position “extended” if a new workpiece is requested (request).
+2. The pusher extends and pushes a workpiece out of the magazine.
+3. The pusher retracts back once it is fully extended.
+4. The arm swivels back to the position “retracted”
+5. The vacuum is switched on (wait until the workpiece is securely held, e.g. via WPgripped).
+6. The arm swivels to the position “extended”, transferring a workpiece to a pick-up zone.
+7. The vacuum is switched off (wait until the workpiece is released, e.g. via !WPgripped).
+8. The arm swivels to the position “retracted” so that the cup can be picked up by other machine.
+*/
+	while(true) {
+	    present(mode) {
+	    	present(!empty){
+	        	System.out.println("Auto mode");
+	            present(request) {
+	                // Step 1: Arm to extended
+	                abort(armAtDest) {
+	                    sustain armDest;
+	                }
+	                pause;
+	
+	                // Step 2: Pusher extends
+	                abort(pusherExtended) {
+	                    sustain pusherExtend;
+	                }
+	                pause;
+	
+	                // Step 3: Pusher retracts (stop extending)
+	                abort(pusherRetracted) {
+	                    // do NOT sustain pusherExtend here => retract
+	                }
+	                pause;
+	
+	                // Step 4: Arm back to retracted
+	                abort(armAtSource) {
+	                    sustain armSource;
+	                }
+	                pause;
+	
+	                // Step 5: Vacuum ON until WPgripped
+	                abort(WPgripped) {
+	                    sustain vacOn;
+	                }
+	                pause;
+	
+	                // Step 6: Arm to extended again
+	                abort(armAtDest) {
+	                    sustain armDest;
+	                }
+	                pause;
+	
+	                // Step 7: Vacuum OFF until !WPgripped
+	                abort(!WPgripped) {
+	                    // do NOT sustain vacOn here => vacuum off
+	                }
+	                pause;
+	
+	                // Step 8: Arm back to retracted
+	                abort(armAtSource) {
+	                    sustain armSource;
+	                }
+	            }
+	        }
+	        abort(!mode){
+	        	System.out.println("Manual mode");
+	        	{loop{
+	        		abort(immediate !pusherExtendM){
+	        			sustain pusherExtend;
+	        		}
+	        		pause;
+	        	}}
+	        	||
+	        	{loop{
+	        		abort(immediate !armSourceM){
+	        			sustain armSource;
+	        		}
+	        		pause;
+	        	}}
+	        	||
+	        	{loop{
+	        		abort(immediate !vacOnM){
+	        			sustain vacOn;
+	        		}
+	        		pause;
+	        	}}
+	        	||
+	        	{loop{
+	        		abort(immediate !armDestM){
+	        			sustain armDest;
+	        		}
+	        		pause;
+	        	}}
+	        }
+	        
+	    }
+	    pause;
+	}
+
+}
