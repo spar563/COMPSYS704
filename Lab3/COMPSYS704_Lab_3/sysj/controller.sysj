@@ -35,56 +35,31 @@ Controller(
 	||
 	{while(true) {
 		present(modeAuto) {
-			present(!empty){
-				System.out.println("Auto mode");
-				present(request) {
-					// Step 1: Arm to extended
-					abort(armAtDest) {
-						sustain armDest;
-					}
-					pause;
-
-					// Step 2: Pusher extends
-					abort(pusherExtended) {
-						sustain pusherExtend;
-					}
-					pause;
-
-					// Step 3: Pusher retracts (stop extending)
-					abort(pusherRetracted) {
-						// do NOT sustain pusherExtend here => retract
-					}
-					pause;
-
-					// Step 4: Arm back to retracted
-					abort(armAtSource) {
-						sustain armSource;
-					}
-					pause;
-
-					// Step 5: Vacuum ON until WPgripped
-					abort(WPgripped) {
-						sustain vacOn;
-					}
-					pause;
-
-					// Step 6: Arm to extended again
-					abort(armAtDest) {
-						sustain armDest;
-					}
-					pause;
-
-					// Step 7: Vacuum OFF until !WPgripped
-					abort(!WPgripped) {
-						// do NOT sustain vacOn here => vacuum off
-					}
-					pause;
-
-					// Step 8: Arm back to retracted
-					abort(armAtSource) {
-						sustain armSource;
-					}
+			System.out.println("Auto mode");
+			await(request);
+			present(empty) {
+				await(!empty);
+			}
+			
+			present(pusherRetracted) {
+				abort(pusherExtended) {
+					sustain pusherExtend;
 				}
+			}
+			pause;
+			
+			abort(armAtSource) {
+				sustain armSource;
+			}
+			pause;
+			
+			abort(WPgripped){
+				sustain vacOn;
+			}
+			pause;
+			
+			abort (armAtDest) {
+				{sustain armDest;} || {sustain vacOn;}
 			}
 		}
 		pause;
