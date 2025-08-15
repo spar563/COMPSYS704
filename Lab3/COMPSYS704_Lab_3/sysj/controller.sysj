@@ -48,6 +48,7 @@ Controller(
 			}
 			pause;
 			
+			await(pusherRetracted);
 			abort(armAtSource) {
 				sustain armSource;
 			}
